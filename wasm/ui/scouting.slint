@@ -1,0 +1,260 @@
+import { Button, VerticalBox, LineEdit, SpinBox, CheckBox, StandardTableView, ComboBox, Switch, StandardListView } from "std-widgets.slint";
+
+component Field inherits HorizontalLayout {
+    in property<string> label;
+
+    alignment: center;
+
+    padding-top: 8pt;
+
+    VerticalLayout {
+        alignment: center;
+
+        Text {
+            vertical-alignment: center;
+            font-size: 12pt;
+            text: label;
+        }
+
+        @children
+    }
+}
+
+export component Event {
+  in-out property<string> name;
+  in-out property<string> year;
+  in-out property<[{ type: string, num: int, teams: [int] }]> matches;
+
+  Field {
+    label: "Name";
+    LineEdit {
+      text <=> root.name;
+    }
+  }
+
+  Field {
+    label: "Year";
+    LineEdit {
+      text <=> root.year;
+    }
+  }
+}
+
+export component Objectives {
+  in property<[{ singular: bool, name: string }]> objectives: [{singular: false, name: "Cones"}, {singular: true, name: "Docked"}];
+
+  callback set-objective(string, string);
+
+  VerticalLayout {
+      padding: 18pt;
+
+      Text {
+          font-size: 12pt;
+          text: "Objectives";
+      }
+
+      for o in root.objectives: Rectangle {
+          if (o.singular): cb := CheckBox {
+              text: o.name;
+          }
+          if (!o.singular): le := LineEdit {
+              edited => {
+                  root.set-objective(o.name, le.text);
+              }
+          }
+      }
+  }
+}
+
+enum ManagerMenu {
+    home,
+    delegation,
+}
+
+export component ManagerUi inherits Window {
+    in-out property<bool> manager;
+    in property<[StandardListViewItem]> scouters: [
+        {text: "FRC"},
+    ];
+
+    /*
+        Configuration values shared with Rust
+    */
+    in-out property<bool> scouting_enabled;
+    in-out property<bool> scouting_managed;
+
+    property<string> scouter;
+    property<bool> delegation;
+
+    HorizontalLayout {
+        alignment: center;
+        padding: 8pt;
+
+        VerticalLayout {
+            padding: 8pt;
+            spacing: 8pt;
+
+            if (!root.delegation): VerticalLayout {
+                spacing: 4pt;
+
+                Button {
+                    text: "←";
+                }
+
+                Switch {
+                    text: "Enable Scouting";
+                    checked <=> root.scouting_enabled;
+                }
+                Switch {
+                    text: "Managed Mode";
+                    checked <=> root.scouting_managed;
+                }
+                Field {
+                    label: "Event";
+
+                    ComboBox {
+                        model: ["SCRIW 2023"];
+                    }
+                }
+            }
+
+            StandardListView {
+                model: root.scouters;
+                current-item-changed(i) => {
+                    if (i != -1) {
+                        root.delegation = true;
+                    }
+                }
+            }
+
+            if (root.delegation): VerticalLayout {
+                spacing: 4pt;
+
+                Button {
+                    text: "Apply";
+                    clicked => {
+                        root.delegation = false;
+                    }
+                }
+            }
+        }
+    }
+}
+
+component Scouting inherits VerticalLayout {
+            padding-top: 16pt;
+
+            HorizontalLayout {
+                spacing: 4pt;
+
+                ComboBox {
+                    // width: 48pt;
+                    model: ["Qualification", "Semi-final", "Final"];
+                }
+                Text {
+                    font-size: 10pt;
+                    vertical-alignment: center;
+                    text: "Match";
+                }
+                // SpinBox {
+                //     value: root.match.num;
+                // }
+            }
+            // Text {
+            //     horizontal-alignment: center;
+            //     font-size: 16pt;
+            //     text: "\{root.match.type} match \{root.match.num}";
+            // }
+            // Text {
+            //     horizontal-alignment: center;
+            //     font-size: 18pt;
+            //     text: "\{root.team}";
+            // }
+
+        StandardTableView {
+            columns: [
+                { title: "Team" },
+                { title: "Overall" }
+            ];
+            rows: [
+                [
+                    { text: "4533" },
+                    { text: "10" }
+                ],
+                [
+                    { text: "4243" },
+                    { text: "9" }
+                ]
+            ];
+        }
+}
+
+export component ScoutingApp inherits Window {
+    // The scouter's initials
+    in-out property<string> scouter;
+    // The current match (round)
+    in property<{type: string, num: int}> match; //just some junk values I was using   : { type: "Qualification", num: 7 };
+    // The scoutee's team number
+    in property<int> team;
+    // The events in the scouting app's registry
+    in property<[string]> events;
+
+    property<bool> manager;
+
+    /*
+        Callbacks to the Rust code
+    */
+    callback validate_scouter() -> bool;
+
+    default-font-size: 10pt;
+
+    if (!root.manager): VerticalLayout {
+        padding: 18pt;
+        alignment: start;
+
+        Text {
+            font-size: 12pt;
+            horizontal-alignment: center;
+            text: "Phoenix Scouting v3";
+        }
+
+        Field {
+            label: "Scouter";
+            LineEdit {
+                text <=> root.scouter;
+                placeholder-text: "FRC";
+
+                width: 64pt;
+                height: 28pt;
+
+                font-size: root.default-font-size + (4 * (root.default-font-size / 12));
+
+                edited => {
+                    root.validate-scouter();
+                }
+            }
+        }
+
+        HorizontalLayout {
+            alignment: center;
+            padding: 8pt;
+            spacing: 4pt;
+
+            Button {
+                text: "Register";
+            }
+
+            Button {
+                text: "Manager";
+                clicked => {
+                    root.manager = true;
+                }
+            }
+        }
+        // ManagerUi {}
+    }
+
+    if (root.manager): ManagerUi {}
+
+}
+

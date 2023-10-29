@@ -1,0 +1,20 @@
+export component Field inherits HorizontalLayout {
+    in property<string> label;
+
+    alignment: center;
+
+    padding-top: 8pt;
+
+    VerticalLayout {
+        alignment: center;
+
+        Text {
+            vertical-alignment: center;
+            font-size: 12pt;
+            text: label;
+        }
+
+        @children
+    }
+}
+

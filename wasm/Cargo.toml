@@ -1,0 +1,28 @@
+[package]
+name = "scouting-v3-wasm"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+
+[[bin]]
+name = "scouting-v3"
+path = "src/main.rs"
+
+[dependencies]
+gloo-events = "0.2.0"
+gloo-net = { version = "0.4.0", default-features = false, features = ["http", "json"] }
+gloo-storage = "0.3.0"
+gloo-utils = "0.2.0"
+scouting-v3 = { version = "0.1.0", path = ".." }
+slint = { version = "1.2.2", default-features = false, features = ["backend-winit", "renderer-winit-femtovg", "renderer-winit-software", "compat-1-2"] }
+wasm-bindgen = { version = "0.2.87", default-features = false }
+wasm-bindgen-futures = "0.4.37"
+
+[profile.release]
+opt-level = 3
+lto = true
+strip = true
+
+[build-dependencies]
+slint-build = "1.2.2"
+

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Phoenix Scouting v3</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <style>
+      body, #canvas {
+        overflow: hidden;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+    <script src="loader.js"></script>
+  </head>
+  <body>
+    <script type="module">
+      import init from './scouting-v3.js';
+      try {
+        await init();
+      } catch (e) {
+        document.getElementById("loading").innerHTML = "welp something broke";
+      };
+    </script>
+
+    <p id="loading">Scouting v3 requires WebAssembly. Please use a browser that supports it, such as Firefox.</p>
+    <canvas id="canvas"></canvas>
+  </body>
+</html>
